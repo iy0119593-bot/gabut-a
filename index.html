@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Have You Been</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    font-family: 'Playfair Display', serif;
+    background: radial-gradient(circle at 30% 30%, #0d1b2a, #000000 80%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Efek aurora */
+  .aurora {
+    position: absolute;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+    background: conic-gradient(from 180deg, #ff0066, #6a11cb, #00c9ff, #ffcc70, #ff0066);
+    filter: blur(140px) brightness(0.7);
+    animation: spin 25s linear infinite;
+    opacity: 0.4;
+    z-index: 0;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Efek hujan */
+  .raindrop {
+    position: absolute;
+    width: 2px;
+    height: 15px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    animation: fall linear forwards;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(-10vh); opacity: 1; }
+    100% { transform: translateY(110vh); opacity: 0; }
+  }
+
+  /* Partikel lembut */
+  .particle {
+    position: absolute;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: floatUp linear forwards;
+    z-index: 1;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    100% { transform: translateY(-120vh) scale(1); opacity: 0; }
+  }
+
+  /* Teks utama */
+  #text {
+    font-size: clamp(2.5em, 6vw, 5em);
+    letter-spacing: 6px;
+    background: linear-gradient(270deg, #ffffff, #ff66cc, #66ffff, #ffffff);
+    background-size: 600% 600%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientMove 5s ease infinite, waveGlow 2s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity 0.7s ease;
+    z-index: 3;
+  }
+
+  #text.show { opacity: 1; }
+
+  /* FIX merah terakhir agar tetap teks, bukan blok */
+  #text.red {
+    background: linear-gradient(270deg, #ff4b2b, #ff1744, #ff6f61, #ff4b2b);
+    background-size: 600% 600%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientMove 3s ease infinite, waveGlowRed 2s ease-in-out infinite;
+  }
+
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes waveGlow {
+    0%, 100% { text-shadow: 0 0 20px #fff, 0 0 40px #fff; }
+    50% { text-shadow: 0 0 40px #ffb3b3, 0 0 80px #fff; }
+  }
+
+  @keyframes waveGlowRed {
+    0%, 100% { text-shadow: 0 0 25px #ff1744, 0 0 60px #ff4b2b; }
+    50% { text-shadow: 0 0 50px #ff6f61, 0 0 90px #ff1744; }
+  }
+
+  /* Efek bintang klik */
+  .star {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #fff 30%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    animation: starFloat 1.5s ease-out forwards;
+    z-index: 5;
+  }
+
+  @keyframes starFloat {
+    0% { transform: translateY(0) scale(0.8); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1.4); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"></div>
+<div id="text"></div>
+
+<audio id="bgMusic" preload="auto" loop>
+  <source src="https://spare-gold-n0ijemyg37.edgeone.app/Where%20have%20you%20been.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  const bgMusic = document.getElementById("bgMusic");
+  const textElement = document.getElementById("text");
+
+  const words = ["WHERE", "HAVE", "YOU", "BEEN", "ALL", "MY", "LIFE", "ALL", "MY", "LIFE"];
+  const normalDelay = 1500;
+  const fasterDelay = 1200;
+
+  // klik di mana saja untuk mulai
+  window.addEventListener('click', startAll, { once: true });
+  window.addEventListener('touchstart', startAll, { once: true });
+
+  function startAll() {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+    bgMusic.currentTime = 5;
+    bgMusic.volume = 0.85;
+    bgMusic.play().catch(() => console.log("Autoplay blocked"));
+    startLyrics();
+    startRain();
+    startParticles();
+  }
+
+  function startLyrics() {
+    let index = 0;
+    function showNextWord() {
+      textElement.classList.remove("show");
+      setTimeout(() => {
+        textElement.textContent = words[index];
+        textElement.classList.add("show");
+
+        if (index === words.length - 1) textElement.classList.add("red");
+        else textElement.classList.remove("red");
+
+        index++;
+        if (index < words.length) {
+          const delay = (index >= 2) ? fasterDelay : normalDelay;
+          setTimeout(showNextWord, delay);
+        }
+      }, 200);
+    }
+    showNextWord();
+  }
+
+  // hujan
+  function startRain() {
+    setInterval(() => {
+      const drop = document.createElement("div");
+      drop.classList.add("raindrop");
+      drop.style.left = Math.random() * 100 + "vw";
+      drop.style.animationDuration = (Math.random() * 1 + 1.2) + "s";
+      document.body.appendChild(drop);
+      setTimeout(() => drop.remove(), 2500);
+    }, 90);
+  }
+
+  // partikel
+  function startParticles() {
+    setInterval(() => {
+      const p = document.createElement("div");
+      p.classList.add("particle");
+      const size = Math.random() * 5 + 2;
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.bottom = "0px";
+      p.style.animationDuration = (Math.random() * 5 + 4) + "s";
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 8000);
+    }, 250);
+  }
+
+  // bintang interaktif
+  document.addEventListener("click", (e) => createStar(e.clientX, e.clientY));
+  document.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    createStar(touch.clientX, touch.clientY);
+  });
+
+  function createStar(x, y) {
+    const star = document.createElement("div");
+    star.classList.add("star");
+    star.style.left = `${x - 10}px`;
+    star.style.top = `${y - 10}px`;
+    document.body.appendChild(star);
+    setTimeout(() => star.remove(), 1500);
+  }
+</script>
+
+</body>
+</html>
